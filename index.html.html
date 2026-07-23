@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ER Triage Trainer v3 — Spatial Mode</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--b9:#0a1628;--b8:#0f2044;--b6:#1e4db7;--b5:#2563eb;--b1:#dbeafe;--b0:#eff6ff;--g6:#16a34a;--g1:#dcfce7;--r6:#dc2626;--r1:#fee2e2;--a5:#f59e0b;--a1:#fef3c7;--gy9:#111827;--gy7:#374151;--gy5:#6b7280;--gy3:#d1d5db;--gy1:#f3f4f6;--gy0:#f9fafb;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gy0);color:var(--gy9);font-size:14px;min-height:100vh;}
+/* TOPBAR */
+.topbar{background:var(--b9);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:300;}
+.brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;}
+.dot{width:9px;height:9px;background:#ef4444;border-radius:50%;animation:pu 2s infinite;}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.3);}}
+/* NAV */
+.navtabs{background:var(--b8);display:flex;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,.1);padding:0 16px;}
+.ntab{padding:11px 16px;font-size:13px;font-weight:500;color:#93c5fd;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.ntab:hover{color:#fff;}.ntab.on{color:#fff;border-bottom-color:#3b82f6;}
+/* SCREENS */
+.scr{display:none;max-width:900px;margin:0 auto;padding:16px 14px;}
+.scr.on{display:block;}
+/* LOGIN */
+.lw{max-width:460px;margin:40px auto;}
+.lc{background:#fff;border-radius:14px;padding:32px;box-shadow:0 4px 12px rgba(0,0,0,.1);text-align:center;}
+.li{font-size:42px;margin-bottom:10px;}
+.lt{font-size:22px;font-weight:700;color:var(--b9);margin-bottom:4px;}
+.ls{font-size:13px;color:var(--gy5);margin-bottom:20px;}
+.ig{margin-bottom:12px;text-align:left;}
+.ig label{display:block;font-size:11px;font-weight:700;color:var(--gy7);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
+.ig input{width:100%;padding:10px 12px;border:1.5px solid var(--gy3);border-radius:6px;font-size:14px;outline:none;}
+.ig input:focus{border-color:var(--b5);}
+.mode-select{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mode-btn{padding:16px 12px;border:2px solid var(--gy3);border-radius:10px;cursor:pointer;text-align:center;background:#fff;transition:all .15s;}
+.mode-btn:hover{border-color:var(--b5);background:var(--b0);}
+.mode-btn.on{border-color:var(--b6);background:var(--b0);}
+.mode-icon{font-size:28px;margin-bottom:6px;}
+.mode-title{font-size:14px;font-weight:700;color:var(--b9);}
+.mode-desc{font-size:11px;color:var(--gy5);margin-top:3px;}
+.bp{width:100%;padding:12px;background:var(--b6);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}
+.bp:hover{background:#1a3a6b;}
+.uc{display:inline-block;padding:4px 10px;background:var(--b0);color:#1e4db7;border:1px solid var(--b1);border-radius:20px;font-size:12px;cursor:pointer;margin:3px;}
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.scard{background:#fff;border-radius:8px;padding:11px 13px;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:3px solid var(--b5);}
+.slbl{font-size:10px;color:var(--gy5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.sval{font-size:22px;font-weight:700;color:var(--b9);}
+/* CARD */
+.card{background:#fff;border-radius:9px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:12px;}
+.ctit{font-size:11px;font-weight:700;color:var(--gy5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+/* TRIAGE SECTION */
+.pt-hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.pt-name{font-size:17px;font-weight:700;color:var(--b9);}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600;}
+.be{background:var(--g1);color:#166534;}.bm{background:var(--a1);color:#92400e;}.bh{background:var(--r1);color:#991b1b;}.bc{background:var(--gy1);color:var(--gy7);}
+.ft{font-size:14px;line-height:1.7;color:var(--gy7);background:var(--gy0);border-radius:6px;padding:10px 12px;margin-bottom:10px;}
+/* VITALS */
+.vg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px;}
+.vit{border-radius:6px;padding:8px;text-align:center;border:1px solid var(--gy3);}
+.vok{background:#f0fdf4;border-color:#bbf7d0;}.vw{background:#fffbeb;border-color:#fde68a;}.vcr{background:#fff1f2;border-color:#fca5a5;}
+.vlbl{font-size:10px;color:var(--gy5);font-weight:600;text-transform:uppercase;margin-bottom:2px;}
+.vval{font-size:14px;font-weight:700;}.vunit{font-size:10px;color:var(--gy5);}
+.vflg{font-size:10px;font-weight:600;margin-top:1px;}
+.fo{color:#15803d;}.fw{color:#d97706;}.fc{color:#dc2626;}
+/* ESI BUTTONS */
+.leg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:12px;}
+.li2{border-radius:6px;padding:4px;font-size:11px;text-align:center;font-weight:600;}
+.l1{background:#fee2e2;color:#991b1b;}.l2{background:#fef3c7;color:#92400e;}.l3{background:#dbeafe;color:#1e40af;}.l4{background:#dcfce7;color:#166534;}.l5{background:var(--gy1);color:var(--gy7);}
+.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px;}
+.tbtn{border:2px solid var(--gy3);border-radius:6px;padding:9px 3px;cursor:pointer;text-align:center;background:#fff;transition:all .15s;}
+.tbtn:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.1);}
+.tbtn.on{border-width:2.5px;}
+.tn{font-size:20px;font-weight:800;}.tname{font-size:10px;color:var(--gy5);margin-top:1px;}
+.t1 .tn{color:#dc2626;}.t1.on{border-color:#dc2626;background:#fff1f2;}
+.t2 .tn{color:#d97706;}.t2.on{border-color:#d97706;background:#fffbeb;}
+.t3 .tn{color:#2563eb;}.t3.on{border-color:#2563eb;background:#eff6ff;}
+.t4 .tn{color:#16a34a;}.t4.on{border-color:#16a34a;background:#f0fdf4;}
+.t5 .tn{color:#6b7280;}.t5.on{border-color:#6b7280;background:var(--gy1);}
+.bsub{background:var(--b6);color:#fff;width:100%;padding:11px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px;}
+.bsub:hover{background:#1a3a6b;}.bsub:disabled{opacity:.4;cursor:not-allowed;}
+.fb{border-radius:6px;padding:12px;margin-bottom:8px;font-size:13px;line-height:1.6;display:none;}
+.fbc{background:#f0fdf4;border:1px solid #bbf7d0;color:#14532d;}
+.fbi{background:#fff1f2;border:1px solid #fecaca;color:#7f1d1d;}
+.fbp{background:#fffbeb;border:1px solid #fde68a;color:#78350f;}
+.fbt{font-weight:700;margin-bottom:4px;}
+/* ROOM ASSIGNMENT */
+.assign-panel{background:var(--b0);border:1.5px solid var(--b1);border-radius:8px;padding:14px;margin-bottom:8px;display:none;}
+.assign-title{font-size:13px;font-weight:700;color:var(--b9);margin-bottom:10px;}
+.room-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px;}
+.room-opt{padding:9px 6px;border:2px solid var(--gy3);border-radius:7px;cursor:pointer;text-align:center;background:#fff;transition:all .15s;font-size:12px;}
+.room-opt:hover:not(.occupied):not(.cleaning){background:var(--b0);border-color:var(--b5);}
+.room-opt.occupied{background:var(--r1);border-color:#fca5a5;cursor:not-allowed;}
+.room-opt.cleaning{background:var(--a1);border-color:#fde68a;cursor:not-allowed;}
+.room-opt.ep{background:#f3e8ff;border-color:#c4b5fd;}
+.room-opt.hallway-opt{background:#fffbeb;border-color:#fde68a;}
+.room-opt-name{font-weight:700;font-size:11px;color:var(--b9);}
+.room-opt-status{font-size:10px;color:var(--gy5);margin-top:2px;}
+.bnxt{background:#fff;color:var(--b6);border:2px solid var(--b5);width:100%;padding:10px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;display:none;}
+.bnxt:hover{background:var(--b0);}
+/* ER MAP */
+.er-map-wrap{position:relative;width:100%;background:#e8edf2;border-radius:12px;padding:14px;overflow:hidden;}
+.er-title{font-size:13px;font-weight:700;color:var(--b9);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+/* MAP LAYOUT */
+.map-layout{display:grid;grid-template-columns:60px 1fr 80px;grid-template-rows:auto auto auto;gap:6px;align-items:center;}
+.map-top{grid-column:1/4;display:grid;grid-template-columns:repeat(4,1fr) 80px;gap:6px;align-items:start;}
+.map-mid{grid-column:1/4;display:grid;grid-template-columns:60px 1fr 80px;gap:6px;align-items:stretch;}
+.map-bot{grid-column:1/4;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-left:66px;}
+/* ROOM CELLS */
+.room-cell{background:#1e293b;border-radius:8px;padding:8px 6px;min-height:72px;position:relative;cursor:pointer;transition:all .2s;border:2px solid transparent;}
+.room-cell:hover{border-color:#3b82f6;}
+.room-cell.occupied{background:#1e293b;border-color:#ef4444;}
+.room-cell.ep-room{background:#2d1b69;border-color:#7c3aed;}
+.room-cell.cleaning-anim{background:#78350f;border-color:#f59e0b;animation:cleanpulse 1s infinite;}
+@keyframes cleanpulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+.room-label{font-size:10px;font-weight:700;color:#94a3b8;text-align:center;margin-bottom:4px;}
+.room-patient{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.patient-icon{font-size:20px;}
+.patient-info{font-size:9px;color:#e2e8f0;text-align:center;line-height:1.3;font-weight:600;}
+.patient-esi{font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;margin-top:2px;}
+.esi-badge-1{background:#dc2626;color:#fff;}
+.esi-badge-2{background:#d97706;color:#fff;}
+.esi-badge-3{background:#2563eb;color:#fff;}
+.esi-badge-4{background:#16a34a;color:#fff;}
+.esi-badge-5{background:#6b7280;color:#fff;}
+.room-empty-txt{font-size:10px;color:#475569;text-align:center;padding-top:8px;}
+.cleaning-txt{font-size:10px;color:#f59e0b;font-weight:700;text-align:center;padding-top:6px;}
+/* HALLWAY */
+.hallway-v{writing-mode:vertical-rl;text-orientation:mixed;background:#334155;color:#94a3b8;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:6px;padding:6px 4px;letter-spacing:.05em;}
+.hallway-h{background:#334155;color:#94a3b8;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:6px;padding:8px;letter-spacing:.05em;}
+/* NURSES STATION */
+.nurses-station{background:#0f2044;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;min-height:80px;}
+.ns-txt{color:#93c5fd;font-size:14px;font-weight:800;letter-spacing:.03em;}
+/* HALLWAY SLOTS */
+.hallway-slots{display:flex;gap:6px;padding:6px;background:#1e293b;border-radius:8px;min-height:56px;align-items:center;flex-wrap:wrap;}
+.hallway-slot{background:#334155;border-radius:6px;padding:5px 7px;font-size:9px;color:#94a3b8;text-align:center;min-width:60px;border:1px dashed #475569;}
+.hallway-slot.has-patient{background:#1e293b;border:1px solid #3b82f6;color:#e2e8f0;}
+.hallway-slot.blocked{border-color:#ef4444;background:#7f1d1d;}
+/* EP ROOMS */
+.ep-rooms{display:flex;flex-direction:column;gap:6px;}
+/* ENTRANCE/EXIT LABELS */
+.entrance-lbl{font-size:9px;color:#ef4444;font-weight:700;text-align:right;line-height:1.3;}
+.exit-lbl{font-size:9px;color:#ef4444;font-weight:700;line-height:1.3;writing-mode:vertical-rl;}
+/* SIREN OVERLAY */
+.siren-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(220,38,38,.15);z-index:400;display:none;pointer-events:none;}
+.siren-overlay.on{display:block;animation:sirenflash 0.5s infinite;}
+@keyframes sirenflash{0%,100%{background:rgba(220,38,38,.15);}50%{background:rgba(220,38,38,.35);}}
+.siren-banner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#dc2626;color:#fff;padding:14px 28px;border-radius:10px;font-size:16px;font-weight:800;z-index:500;display:none;text-align:center;box-shadow:0 4px 20px rgba(220,38,38,.5);animation:sirenbounce .3s infinite alternate;}
+@keyframes sirenbounce{0%{transform:translateX(-50%) scale(1);}100%{transform:translateX(-50%) scale(1.03);}}
+.siren-banner.on{display:block;}
+/* PATIENT QUEUE */
+.queue-wrap{background:#fff;border-radius:9px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:12px;}
+.queue-title{font-size:11px;font-weight:700;color:var(--gy5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.queue-list{display:flex;gap:8px;flex-wrap:wrap;}
+.queue-pt{background:var(--gy0);border:1px solid var(--gy3);border-radius:7px;padding:7px 10px;font-size:12px;display:flex;align-items:center;gap:6px;}
+.queue-pt.emergency{border-color:#ef4444;background:#fff1f2;animation:borderflash .5s infinite alternate;}
+@keyframes borderflash{0%{border-color:#ef4444;}100%{border-color:#fca5a5;}}
+/* ROOM ACTION POPUP */
+.room-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:600;display:none;min-width:260px;max-width:320px;}
+.room-popup.on{display:block;}
+.popup-title{font-size:15px;font-weight:700;color:var(--b9);margin-bottom:12px;}
+.popup-btn{width:100%;padding:10px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:7px;}
+.popup-move{background:var(--b0);color:var(--b6);border:1.5px solid var(--b5);}
+.popup-discharge{background:var(--g1);color:#166534;border:1.5px solid #bbf7d0;}
+.popup-clean{background:var(--a1);color:#92400e;border:1.5px solid #fde68a;}
+.popup-close{background:var(--gy1);color:var(--gy7);border:1.5px solid var(--gy3);}
+/* REPORT */
+.rb{background:linear-gradient(135deg,var(--b9),#1a3a6b);color:#fff;border-radius:9px;padding:18px;margin-bottom:12px;}
+.rtit{font-size:16px;font-weight:700;margin-bottom:12px;}
+.rst{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px;}
+.rv{font-weight:700;color:#93c5fd;}
+.penalty-list{background:var(--r1);border:1px solid #fca5a5;border-radius:8px;padding:12px;margin-top:10px;}
+.penalty-item{font-size:13px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #fecaca;display:flex;gap:8px;}
+.penalty-item:last-child{border-bottom:none;}
+/* CATBARS */
+.catrow{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.catname{font-size:12px;color:var(--gy7);width:95px;flex-shrink:0;font-weight:500;}
+.cattrack{flex:1;height:6px;background:var(--gy1);border-radius:3px;overflow:hidden;}
+.catfill{height:100%;border-radius:3px;transition:width .4s;}
+.catpct{font-size:12px;color:var(--gy5);width:32px;text-align:right;}
+.shdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.bexp{background:var(--b9);color:#fff;font-size:12px;padding:6px 13px;border-radius:6px;border:none;cursor:pointer;}
+.lw2{overflow-x:auto;border-radius:6px;border:1px solid var(--gy3);}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:var(--b9);color:#fff;padding:7px 8px;text-align:left;font-weight:600;white-space:nowrap;}
+td{padding:6px 8px;border-bottom:1px solid var(--gy1);color:var(--gy7);}
+tr:hover td{background:var(--b0);}
+.rc td{background:#f0fdf4;}.rp td{background:#fffbeb;}.ri td{background:#fff1f2;}
+.empty{text-align:center;padding:28px;color:var(--gy5);}
+@media(max-width:600px){.srow{grid-template-columns:repeat(2,1fr);}.vg{grid-template-columns:repeat(3,1fr);}.tgrid{grid-template-columns:repeat(5,1fr);}.room-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- SIREN -->
+<div class="siren-overlay" id="siren-overlay"></div>
+<div class="siren-banner" id="siren-banner">🚨 EMERGENCY INCOMING — ESI-1 PATIENT VIA AMBULANCE 🚨</div>
+
+<!-- ROOM POPUP -->
+<div class="room-popup" id="room-popup">
+  <div class="popup-title" id="popup-title">Room 1</div>
+  <div id="popup-content"></div>
+  <button class="popup-btn popup-close" onclick="closePopup()">Cancel</button>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar" style="display:none;">
+  <div class="brand"><div class="dot"></div>ER Triage Trainer <span style="font-size:10px;background:#5b21b6;color:#fff;padding:2px 6px;border-radius:4px;margin-left:4px;">v3</span></div>
+  <div id="tpu" style="font-size:13px;color:#93c5fd;"></div>
+</div>
+<div class="navtabs" id="navtabs" style="display:none;">
+  <div class="ntab on" data-t="train" onclick="sw('train')">🏥 Triage</div>
+  <div class="ntab" data-t="ermap" onclick="sw('ermap')">🗺️ ER Floor</div>
+  <div class="ntab" data-t="report" onclick="sw('report')">📈 Report</div>
+  <div class="ntab" data-t="log" onclick="sw('log')">📋 Log</div>
+</div>
+
+<!-- LOGIN -->
+<div id="s-login" class="scr on" style="max-width:100%;padding:0;">
+  <div class="lw">
+    <div class="lc">
+      <div class="li">🏥</div>
+      <div class="lt">ER Triage Trainer v3</div>
+      <div class="ls">Choose your training mode to get started</div>
+      <div class="ig"><label>Your name</label><input id="ln" type="text" placeholder="Enter your name..." onkeydown="if(event.key==='Enter')go()"></div>
+      <div class="ig"><label>Role (optional)</label><input id="lr" type="text" placeholder="e.g. Nursing student, RN, Paramedic..."></div>
+      <div class="mode-select">
+        <div class="mode-btn on" id="mode-practice" onclick="setMode('practice')">
+          <div class="mode-icon">📋</div>
+          <div class="mode-title">Practice Mode</div>
+          <div class="mode-desc">Triage decisions only. No room management.</div>
+        </div>
+        <div class="mode-btn" id="mode-spatial" onclick="setMode('spatial')">
+          <div class="mode-icon">🗺️</div>
+          <div class="mode-title">Spatial Mode</div>
+          <div class="mode-desc">Triage + assign patients to rooms. Manage the ER floor.</div>
+        </div>
+      </div>
+      <button class="bp" onclick="go()">Start Training</button>
+      <div id="eu" style="margin-top:14px;display:none;text-align:left;"><div style="font-size:12px;color:var(--gy5);margin-bottom:6px;">Return as:</div><div id="uch"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRIAGE SCREEN -->
+<div id="s-train" class="scr">
+  <div class="srow">
+    <div class="scard"><div class="slbl">Triage Score</div><div class="sval" id="ts">0</div></div>
+    <div class="scard" style="border-left-color:#10b981;"><div class="slbl">Accuracy</div><div class="sval" id="ta">—</div></div>
+    <div class="scard" style="border-left-color:#f59e0b;"><div class="slbl">Streak</div><div class="sval" id="tst">0</div></div>
+    <div class="scard" style="border-left-color:#8b5cf6;"><div class="slbl">Cases</div><div class="sval" id="td">0</div></div>
+  </div>
+
+  <!-- Patient queue (spatial only) -->
+  <div class="queue-wrap" id="queue-wrap" style="display:none;">
+    <div class="queue-title">Waiting Room Queue <span id="queue-count" style="color:var(--gy5);font-weight:400;">0 patients</span></div>
+    <div class="queue-list" id="queue-list"><span style="font-size:13px;color:var(--gy5);">No patients waiting</span></div>
+  </div>
+
+  <div class="card" id="pt-card">
+    <div class="pt-hdr">
+      <div><div class="pt-name" id="pt-name">Loading...</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;" id="pt-badges"></div></div>
+      <div style="font-size:12px;color:var(--gy5);" id="case-ctr">Case 1</div>
+    </div>
+    <div class="ctit">Chief Complaint</div>
+    <div class="ft" id="pt-sym"></div>
+    <div class="ctit">Vitals</div>
+    <div class="vg" id="vgrid"></div>
+    <div class="ctit" id="hist-lbl" style="display:none;">History</div>
+    <div class="ft" id="pt-hist" style="display:none;"></div>
+    <div class="leg"><div class="li2 l1">1 Immediate</div><div class="li2 l2">2 Emergent</div><div class="li2 l3">3 Urgent</div><div class="li2 l4">4 Less urgent</div><div class="li2 l5">5 Non-urgent</div></div>
+    <div class="tgrid">
+      <div class="tbtn t1" onclick="selESI(1)"><div class="tn">1</div><div class="tname">Immediate</div></div>
+      <div class="tbtn t2" onclick="selESI(2)"><div class="tn">2</div><div class="tname">Emergent</div></div>
+      <div class="tbtn t3" onclick="selESI(3)"><div class="tn">3</div><div class="tname">Urgent</div></div>
+      <div class="tbtn t4" onclick="selESI(4)"><div class="tn">4</div><div class="tname">Less urgent</div></div>
+      <div class="tbtn t5" onclick="selESI(5)"><div class="tn">5</div><div class="tname">Non-urgent</div></div>
+    </div>
+    <button class="bsub" id="bsub" onclick="submitTriage()">Submit Triage Decision</button>
+    <div class="fb" id="fb"></div>
+    <!-- Room assignment panel (spatial only) -->
+    <div class="assign-panel" id="assign-panel">
+      <div class="assign-title">📍 Assign patient to a room or hallway:</div>
+      <div class="room-grid" id="assign-room-grid"></div>
+      <div id="assign-status" style="font-size:12px;color:var(--gy5);margin-bottom:8px;"></div>
+    </div>
+    <button class="bnxt" id="bnxt" onclick="nextCase()">Next Patient →</button>
+  </div>
+</div>
+
+<!-- ER MAP SCREEN -->
+<div id="s-ermap" class="scr">
+  <div class="srow">
+    <div class="scard"><div class="slbl">Spatial Score</div><div class="sval" id="sp-score">0</div></div>
+    <div class="scard" style="border-left-color:#ef4444;"><div class="slbl">Penalties</div><div class="sval" id="sp-pen">0</div></div>
+    <div class="scard" style="border-left-color:#10b981;"><div class="slbl">Discharged</div><div class="sval" id="sp-dis">0</div></div>
+    <div class="scard" style="border-left-color:#f59e0b;"><div class="slbl">Hall Patients</div><div class="sval" id="sp-hall">0</div></div>
+  </div>
+
+  <div class="card er-map-wrap">
+    <div class="er-title">
+      <span>🏥 ER Floor — Click a room to manage patient</span>
+      <span style="font-size:11px;color:var(--gy5);">Rooms: <span id="rooms-used">0</span>/8 · Hallway: <span id="hall-used">0</span>/2</span>
+    </div>
+
+    <!-- TOP ROW: Rooms 1-4 + EP entrance label -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr) 90px;gap:6px;margin-bottom:6px;align-items:start;">
+      <div class="room-cell" id="room-1" onclick="clickRoom('room-1')"><div class="room-label">Room 1</div><div id="room-1-content" class="room-empty-txt">Empty</div></div>
+      <div class="room-cell" id="room-2" onclick="clickRoom('room-2')"><div class="room-label">Room 2</div><div id="room-2-content" class="room-empty-txt">Empty</div></div>
+      <div class="room-cell" id="room-3" onclick="clickRoom('room-3')"><div class="room-label">Room 3</div><div id="room-3-content" class="room-empty-txt">Empty</div></div>
+      <div class="room-cell" id="room-4" onclick="clickRoom('room-4')"><div class="room-label">Room 4</div><div id="room-4-content" class="room-empty-txt">Empty</div></div>
+      <div class="entrance-lbl">🚑 Ambulance<br>Emergency<br>Entrance</div>
+    </div>
+
+    <!-- HALLWAY TOP -->
+    <div class="hallway-h" style="margin-bottom:6px;">— HALLWAY —</div>
+
+    <!-- MIDDLE: Left hallway + Nurses station + Right hallway + EP rooms -->
+    <div style="display:grid;grid-template-columns:54px 1fr 54px 90px;gap:6px;margin-bottom:6px;align-items:stretch;">
+      <div class="hallway-v">HALLWAY</div>
+      <div class="nurses-station"><div class="ns-txt">👩‍⚕️ Nurse's Station</div></div>
+      <div class="hallway-v">HALLWAY</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="room-cell ep-room" id="ep-1" onclick="clickRoom('ep-1')"><div class="room-label" style="color:#c4b5fd;">EP Room 1</div><div id="ep-1-content" class="room-empty-txt">Empty</div></div>
+        <div class="room-cell ep-room" id="ep-2" onclick="clickRoom('ep-2')"><div class="room-label" style="color:#c4b5fd;">EP Room 2</div><div id="ep-2-content" class="room-empty-txt">Empty</div></div>
+      </div>
+    </div>
+
+    <!-- HALLWAY BOTTOM with patient slots -->
+    <div style="background:#1e293b;border-radius:8px;padding:8px;margin-bottom:6px;">
+      <div style="font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:6px;">— HALLWAY — (max 2 patients · do not block exits)</div>
+      <div style="display:flex;gap:8px;" id="hallway-slots">
+        <div class="hallway-slot" id="hall-slot-0">Slot 1<br><span style="font-size:9px;">Empty</span></div>
+        <div class="hallway-slot" id="hall-slot-1">Slot 2<br><span style="font-size:9px;">Empty</span></div>
+        <div style="margin-left:auto;font-size:9px;color:#ef4444;font-weight:700;align-self:center;">⛔ General Exit/Entry<br>from Waiting Room</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW: Rooms 5-8 -->
+    <div style="display:grid;grid-template-columns:54px repeat(4,1fr);gap:6px;align-items:start;">
+      <div style="font-size:9px;color:#ef4444;font-weight:700;writing-mode:vertical-rl;text-align:center;">⛔ Exit/Entry</div>
+      <div class="room-cell" id="room-5" onclick="clickRoom('room-5')"><div class="room-label">Room 5</div><div id="room-5-content" class="room-empty-txt">Empty</div></div>
+      <div class="room-cell" id="room-6" onclick="clickRoom('room-6')"><div class="room-label">Room 6</div><div id="room-6-content" class="room-empty-txt">Empty</div></div>
+      <div class="room-cell" id="room-7" onclick="clickRoom('room-7')"><div class="room-label">Room 7</div><div id="room-7-content" class="room-empty-txt">Empty</div></div>
+      <div class="room-cell" id="room-8" onclick="clickRoom('room-8')"><div class="room-label">Room 8</div><div id="room-8-content" class="room-empty-txt">Empty</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div id="s-report" class="scr">
+  <div class="rb">
+    <div class="rtit">📈 Session Report</div>
+    <div id="report-content"><div style="color:#93c5fd;font-size:13px;">Complete some cases to generate your report.</div></div>
+  </div>
+  <div class="card" id="penalty-card" style="display:none;">
+    <div class="ctit" style="color:#dc2626;">Spatial Penalties</div>
+    <div class="penalty-list" id="penalty-list"></div>
+  </div>
+  <div class="card">
+    <div class="ctit">Triage Accuracy by Category</div>
+    <div id="cat-bars"></div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="s-log" class="scr">
+  <div class="card">
+    <div class="shdr"><div class="ctit" style="margin-bottom:0;">Full Session Log</div><button class="bexp" onclick="expCSV()">⬇ Export CSV</button></div>
+    <div class="lw2"><table><thead><tr><th>#</th><th>Patient</th><th>Category</th><th>You</th><th>Correct</th><th>Result</th><th>Points</th><th>Room</th><th>Mode</th></tr></thead><tbody id="log-body"></tbody></table></div>
+    <div class="empty" id="log-empty"><div style="font-size:24px;">📋</div><p style="margin-top:6px;">No cases yet.</p></div>
+  </div>
+</div>
+
+<script>
+// ===================== CASES =====================
+const CASES=[
+  {id:'C01',name:'Maria',age:58,cat:'cardiac',diff:'hard',sym:'Crushing chest pain going to left arm. Sweating heavily. Very anxious.',hist:'Has high blood pressure and diabetes. Smoked for 30 years.',vitals:{HR:{v:108,u:'bpm'},BP:{v:'86/58',u:'mmHg'},SpO2:{v:'93',u:'%'},RR:{v:22,u:'/min'},Temp:{v:'37.1',u:'°C'}},answer:1,analysis:'ESI 1 — Heart attack with dangerously low BP (86/58) and high HR. Needs cath lab immediately.'},
+  {id:'C02',name:'James',age:34,cat:'neuro',diff:'medium',sym:'Worst headache of his life. Came on instantly. Neck stiffness.',hist:'No prior headaches. Started at full intensity in seconds.',vitals:{HR:{v:92,u:'bpm'},BP:{v:'152/94',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:16,u:'/min'},Temp:{v:'37.0',u:'°C'}},answer:2,analysis:'ESI 2 — Thunderclap headache with neck stiffness = possible brain bleed. Needs CT immediately.'},
+  {id:'C03',name:'Tommy',age:7,cat:'pediatric',diff:'easy',sym:'Scraped knee from falling off bike. Bleeding stopped. Crying but calm.',hist:'Fell off bicycle 30 min ago. No head injury.',vitals:{HR:{v:96,u:'bpm'},BP:{v:'100/65',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:18,u:'/min'},Temp:{v:'37.0',u:'°C'}},answer:4,analysis:'ESI 4 — Minor injury. Controlled bleeding, normal vitals. Just needs wound care.'},
+  {id:'C04',name:'Eleanor',age:72,cat:'neuro',diff:'hard',sym:'Sudden face drooping, slurred speech, right arm weakness. Started 50 min ago.',hist:'Has irregular heartbeat on blood thinners. Had mini-stroke 2 years ago.',vitals:{HR:{v:86,u:'bpm'},BP:{v:'192/108',u:'mmHg'},SpO2:{v:'97',u:'%'},RR:{v:17,u:'/min'},Temp:{v:'36.9',u:'°C'}},answer:1,analysis:'ESI 1 — Active stroke in treatment window. Every minute = brain cells dying.'},
+  {id:'C05',name:'Carlos',age:45,cat:'abdominal',diff:'medium',sym:'Severe right flank pain going to groin. Nausea, vomiting. Cannot get comfortable.',hist:'Had kidney stone 4 years ago. Same feeling. No fever.',vitals:{HR:{v:100,u:'bpm'},BP:{v:'138/86',u:'mmHg'},SpO2:{v:'98',u:'%'},RR:{v:18,u:'/min'},Temp:{v:'37.1',u:'°C'}},answer:3,analysis:'ESI 3 — Kidney stone. Needs scan, urinalysis, and IV pain medication.'},
+  {id:'C06',name:'Dylan',age:19,cat:'toxicology',diff:'hard',sym:'Bee sting 15 min ago. Throat tightening. Voice is hoarse. Hives spreading.',hist:'First known sting. No epi-pen. Brought by friend.',vitals:{HR:{v:124,u:'bpm'},BP:{v:'84/56',u:'mmHg'},SpO2:{v:'90',u:'%'},RR:{v:28,u:'/min'},Temp:{v:'37.2',u:'°C'}},answer:1,analysis:'ESI 1 — Anaphylaxis with airway closing and BP crashing. Epi-pen NOW.'},
+  {id:'C07',name:'Dorothy',age:67,cat:'sepsis',diff:'hard',sym:'Getting more confused all day. Mild fever. Family says she is not herself.',hist:'Had UTI 10 days ago. Never fully recovered.',vitals:{HR:{v:108,u:'bpm'},BP:{v:'92/60',u:'mmHg'},SpO2:{v:'93',u:'%'},RR:{v:24,u:'/min'},Temp:{v:'38.1',u:'°C'}},answer:1,analysis:'ESI 1 — Sepsis. Low BP, fast HR, low oxygen, confusion, fever. IV antibiotics within the hour.'},
+  {id:'C08',name:'Sofia',age:28,cat:'respiratory',diff:'easy',sym:'Sore throat and mild fever for 3 days. Hurts to swallow. No trouble breathing.',hist:'No medical history. Tried lozenges.',vitals:{HR:{v:82,u:'bpm'},BP:{v:'118/74',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:15,u:'/min'},Temp:{v:'38.0',u:'°C'}},answer:4,analysis:'ESI 4 — Sore throat. Just needs a strep test. Normal vitals, no airway issues.'},
+  {id:'C09',name:'Marcus',age:25,cat:'trauma',diff:'hard',sym:'Motorcycle crash at highway speed. Chest and belly pain. Confused.',hist:'Helmet worn. Took a while to free from wreck.',vitals:{HR:{v:132,u:'bpm'},BP:{v:'82/54',u:'mmHg'},SpO2:{v:'90',u:'%'},RR:{v:28,u:'/min'},Temp:{v:'35.8',u:'°C'}},answer:1,analysis:'ESI 1 — Trauma with hemorrhagic shock. BP 82/54 means internal bleeding.'},
+  {id:'C10',name:'Linda',age:42,cat:'other',diff:'easy',sym:'Ran out of blood pressure medication 3 days ago. Feels fine. No symptoms.',hist:'Well-controlled hypertension 8 years. PCP unavailable.',vitals:{HR:{v:74,u:'bpm'},BP:{v:'148/90',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:14,u:'/min'},Temp:{v:'36.8',u:'°C'}},answer:5,analysis:'ESI 5 — Medication refill. No symptoms, no emergency. Just needs a prescription.'},
+  {id:'C11',name:'Harold',age:78,cat:'vascular',diff:'hard',sym:'Sudden tearing belly and back pain. Pale and sweating. Now confused.',hist:'Known bulging blood vessel in belly. Declined surgery.',vitals:{HR:{v:128,u:'bpm'},BP:{v:'76/48',u:'mmHg'},SpO2:{v:'92',u:'%'},RR:{v:28,u:'/min'},Temp:{v:'36.2',u:'°C'}},answer:1,analysis:'ESI 1 — Burst aortic aneurysm. BP 76/48. Needs surgery NOW.'},
+  {id:'C12',name:'Rachel',age:52,cat:'respiratory',diff:'medium',sym:'Sudden shortness of breath and chest pain after a 12-hour flight. No fever.',hist:'Knee surgery 3 weeks ago. Just flew internationally.',vitals:{HR:{v:112,u:'bpm'},BP:{v:'124/80',u:'mmHg'},SpO2:{v:'93',u:'%'},RR:{v:22,u:'/min'},Temp:{v:'37.2',u:'°C'}},answer:2,analysis:'ESI 2 — Likely blood clot in lungs. SpO2 93%, 3 risk factors. Needs CT urgently.'},
+  {id:'C13',name:'Liam',age:10,cat:'pediatric',diff:'hard',sym:'Severe asthma attack. Inhaler used 3 times at home. Only says 2-3 words per breath.',hist:'Two prior ICU admissions for asthma.',vitals:{HR:{v:138,u:'bpm'},BP:{v:'110/70',u:'mmHg'},SpO2:{v:'88',u:'%'},RR:{v:34,u:'/min'},Temp:{v:'37.3',u:'°C'}},answer:1,analysis:'ESI 1 — Status asthmaticus. SpO2 88%, RR 34. Needs IV meds and ICU now.'},
+  {id:'C14',name:'Priya',age:23,cat:'psych',diff:'medium',sym:'Hyperventilating, racing heart, tingling hands. Feels like she is dying.',hist:'Panic disorder, stopped meds 2 months ago.',vitals:{HR:{v:114,u:'bpm'},BP:{v:'132/84',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:30,u:'/min'},Temp:{v:'37.0',u:'°C'}},answer:3,analysis:'ESI 3 — Likely panic but heart causes must be ruled out first. Needs ECG.'},
+  {id:'C15',name:'Peter',age:35,cat:'neuro',diff:'easy',sym:'Mild tension headache all day. Ibuprofen helped a bit.',hist:'Gets these regularly. Stared at computer all day.',vitals:{HR:{v:74,u:'bpm'},BP:{v:'122/78',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:14,u:'/min'},Temp:{v:'36.9',u:'°C'}},answer:5,analysis:'ESI 5 — Tension headache. No red flags. No tests needed.'},
+  {id:'C16',name:'Aisha',age:29,cat:'abdominal',diff:'hard',sym:'Pain moving from belly button to lower right over 8 hours. Nausea, mild fever.',hist:'Period is 6 weeks late. Sexually active.',vitals:{HR:{v:96,u:'bpm'},BP:{v:'122/78',u:'mmHg'},SpO2:{v:'98',u:'%'},RR:{v:17,u:'/min'},Temp:{v:'38.1',u:'°C'}},answer:2,analysis:'ESI 2 — Ectopic pregnancy must be ruled out FIRST before assuming appendicitis.'},
+  {id:'C17',name:'George',age:62,cat:'vascular',diff:'hard',sym:'Left leg suddenly cold, pale, and painful 2 hours ago. Cannot move toes.',hist:'Irregular heartbeat. Blood thinners were low last week.',vitals:{HR:{v:94,u:'bpm'},BP:{v:'148/92',u:'mmHg'},SpO2:{v:'97',u:'%'},RR:{v:16,u:'/min'},Temp:{v:'37.0',u:'°C'}},answer:1,analysis:'ESI 1 — Blocked leg artery. 6-hour window before permanent damage. Already 2 hours in.'},
+  {id:'C18',name:'Kevin',age:16,cat:'toxicology',diff:'hard',sym:'Found unresponsive. Breathing very slowly. Empty pill bottle nearby.',hist:'Parents unaware of drug use.',vitals:{HR:{v:54,u:'bpm'},BP:{v:'88/56',u:'mmHg'},SpO2:{v:'78',u:'%'},RR:{v:6,u:'/min'},Temp:{v:'35.4',u:'°C'}},answer:1,analysis:'ESI 1 — Opioid overdose. SpO2 78%. Needs breathing mask before naloxone.'},
+  {id:'C19',name:'Ruth',age:81,cat:'cardiac',diff:'hard',sym:'Tired and confused since breakfast. Mild jaw pain. No chest pain.',hist:'Has diabetes. Had a silent heart attack 3 years ago.',vitals:{HR:{v:94,u:'bpm'},BP:{v:'102/68',u:'mmHg'},SpO2:{v:'94',u:'%'},RR:{v:20,u:'/min'},Temp:{v:'37.0',u:'°C'}},answer:1,analysis:'ESI 1 — Silent heart attack. Elderly diabetic women rarely have chest pain. ECG now.'},
+  {id:'C20',name:'Ben',age:33,cat:'other',diff:'easy',sym:'Small finger cut while cooking. Bleeding stopped. Finger moves fine.',hist:'No blood thinners. Tetanus up to date.',vitals:{HR:{v:76,u:'bpm'},BP:{v:'122/78',u:'mmHg'},SpO2:{v:'99',u:'%'},RR:{v:14,u:'/min'},Temp:{v:'36.9',u:'°C'}},answer:5,analysis:'ESI 5 — Minor cut. Bleeding controlled, full ROM, no nerve damage. Fast track.'}
+];
+
+// Emergency-only cases (arrive via ambulance)
+const EMERGENCY_CASES=[
+  {id:'E01',name:'Alex',age:44,cat:'cardiac',sym:'Sudden cardiac arrest. EMS doing CPR.',vitals:{HR:{v:0,u:'bpm'},BP:{v:'--/--',u:'mmHg'},SpO2:{v:'--',u:'%'},RR:{v:0,u:'/min'},Temp:{v:'--',u:'°C'}},answer:1,analysis:'ESI 1 — Cardiac arrest. Needs resuscitation bay immediately.'},
+  {id:'E02',name:'Nadia',age:31,cat:'trauma',sym:'Stabbing wound to chest. Struggling to breathe. Dropping BP.',vitals:{HR:{v:140,u:'bpm'},BP:{v:'72/40',u:'mmHg'},SpO2:{v:'85',u:'%'},RR:{v:32,u:'/min'},Temp:{v:'36.0',u:'°C'}},answer:1,analysis:'ESI 1 — Penetrating chest trauma with tension pneumothorax. Needle decompression NOW.'},
+  {id:'E03',name:'Omar',age:55,cat:'neuro',sym:'Unresponsive after collapsing at work. Unknown cause.',vitals:{HR:{v:48,u:'bpm'},BP:{v:'80/50',u:'mmHg'},SpO2:{v:'88',u:'%'},RR:{v:8,u:'/min'},Temp:{v:'35.2',u:'°C'}},answer:1,analysis:'ESI 1 — Unresponsive with failing vitals. Multiple organs at risk.'}
+];
+
+const CATS=['cardiac','neuro','trauma','sepsis','respiratory','abdominal','toxicology','pediatric','psych','vascular','other'];
+
+// ===================== STATE =====================
+let U=null,mode='practice',sel_=null,ans_=false,cur=null;
+let triageScore=0,att=0,streak=0;
+let spatialScore=0,penalties=[],discharged=0,moves=0;
+let slog=[],cst={};
+let rooms={};     // roomId -> patient object or null
+let hallway=[];   // array of patient objects, max 2
+let pendingAssign=null;  // patient waiting for room assignment
+let emergencyTimer=null;
+let cleaningTimers={};
+let cases_pool=[...CASES];
+
+// ===================== STORAGE =====================
+function save(){if(!U)return;try{localStorage.setItem('ert_v3s',JSON.stringify({cst}));}catch(e){}}
+function load(){try{const d=localStorage.getItem('ert_v3s');if(d){const p=JSON.parse(d);cst=p.cst||{};}}catch(e){}}
+
+// ===================== SOUND =====================
+let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+function playBeep(freq,dur,vol){try{initAudio();const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=freq;g.gain.value=vol||0.3;o.start();o.stop(audioCtx.currentTime+dur);g.gain.setValueAtTime(vol||0.3,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);}catch(e){}}
+function playSiren(){let t=0;[880,660,880,660,880,440].forEach(f=>{setTimeout(()=>playBeep(f,.3,.4),t);t+=200;});}
+
+// ===================== LOGIN =====================
+function initLogin(){load();const ns=Object.keys(JSON.parse(localStorage.getItem('ert_v3s')||'{}').cst||{});if(ns.length){document.getElementById('eu').style.display='block';document.getElementById('uch').innerHTML=ns.map(n=>`<span class="uc" onclick="document.getElementById('ln').value='${n}'">${n}</span>`).join('');}}
+function setMode(m){mode=m;document.getElementById('mode-practice').classList.toggle('on',m==='practice');document.getElementById('mode-spatial').classList.toggle('on',m==='spatial');}
+function go(){const n=document.getElementById('ln').value.trim(),r=document.getElementById('lr').value.trim();if(!n){document.getElementById('ln').focus();return;}
+U=n;CATS.forEach(c=>{if(!cst[c])cst[c]={correct:0,total:0};});
+document.getElementById('topbar').style.display='flex';document.getElementById('navtabs').style.display='flex';
+document.getElementById('tpu').innerHTML=`<strong style="color:#fff">${n}</strong> <span style="background:${mode==='spatial'?'#5b21b6':'#1e4db7'};color:#fff;font-size:10px;padding:2px 7px;border-radius:4px;">${mode==='spatial'?'Spatial':'Practice'}</span>`;
+document.getElementById('s-login').classList.remove('on');document.getElementById('s-train').classList.add('on');
+initRooms();
+if(mode==='spatial'){document.getElementById('queue-wrap').style.display='block';scheduleEmergency();}
+cur=nextPt();renderCase();}
+
+// ===================== ROOMS =====================
+const ROOM_IDS=['room-1','room-2','room-3','room-4','room-5','room-6','room-7','room-8','ep-1','ep-2'];
+function initRooms(){ROOM_IDS.forEach(id=>{rooms[id]=null;});}
+function roomsFull(){return ROOM_IDS.filter(id=>!id.startsWith('ep')).every(id=>rooms[id]!==null&&rooms[id]!=='cleaning');}
+function regularRoomsAvailable(){return ROOM_IDS.filter(id=>!id.startsWith('ep')&&rooms[id]===null);}
+function hallwayFull(){return hallway.length>=2;}
+
+// ===================== VITALS =====================
+function vf(k,v){const n=parseFloat(v);if(k==='HR'){if(n<50||n>130)return'vcr';if(n<60||n>100)return'vw';return'vok';}if(k==='SpO2'){if(n<90)return'vcr';if(n<94)return'vw';return'vok';}if(k==='RR'){if(n<10||n>25)return'vcr';if(n>20)return'vw';return'vok';}if(k==='BP'){const s=parseFloat(v.split('/')[0]);if(isNaN(s))return'vok';if(s<90||s>180)return'vcr';if(s<100||s>140)return'vw';return'vok';}if(k==='Temp'){if(n<35||n>39.5)return'vcr';if(n<36||n>38.5)return'vw';return'vok';}return'vok';}
+
+// ===================== CASE FLOW =====================
+function nextPt(){cases_pool=cases_pool.filter(c=>c.id!==cur?.id);if(cases_pool.length===0)cases_pool=[...CASES];let wc=null,wa=1;CATS.forEach(c=>{if(cst[c]&&cst[c].total>=2){const a=cst[c].correct/cst[c].total;if(a<wa){wa=a;wc=c;}}});let pool=[...cases_pool];if(wc){const cp=pool.filter(c=>c.cat===wc);if(cp.length)pool=cp;}return pool[Math.floor(Math.random()*pool.length)];}
+
+function renderCase(){const c=cur;
+document.getElementById('pt-name').textContent=`${c.name}, ${c.age}`;
+document.getElementById('case-ctr').textContent=`Case ${att+1} · ID: ${c.id}`;
+const dc=c.diff==='easy'?'be':c.diff==='medium'?'bm':'bh';
+document.getElementById('pt-badges').innerHTML=`<span class="badge ${dc}">${c.diff.charAt(0).toUpperCase()+c.diff.slice(1)}</span><span class="badge bc">${c.cat}</span>`;
+document.getElementById('pt-sym').textContent=c.sym;
+const hl=document.getElementById('hist-lbl'),hc=document.getElementById('pt-hist');
+if(c.hist){hl.style.display='';hc.style.display='';hc.textContent=c.hist;}else{hl.style.display='none';hc.style.display='none';}
+const vg=document.getElementById('vgrid');vg.innerHTML='';
+Object.entries(c.vitals).forEach(([k,o])=>{const fc=vf(k,String(o.v));const ft=fc==='vcr'?'CRITICAL':fc==='vw'?'Abnormal':'Normal';const ftc=fc==='vcr'?'fc':fc==='vw'?'fw':'fo';vg.innerHTML+=`<div class="vit ${fc}"><div class="vlbl">${k}</div><div class="vval">${o.v}<span class="vunit"> ${o.u}</span></div><div class="vflg ${ftc}">${ft}</div></div>`;});
+sel_=null;ans_=false;
+document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+document.getElementById('fb').style.display='none';
+document.getElementById('assign-panel').style.display='none';
+document.getElementById('bnxt').style.display='none';
+document.getElementById('bsub').style.display='';
+document.getElementById('bsub').disabled=false;}
+
+function selESI(n){if(ans_)return;sel_=n;document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));document.querySelector('.t'+n).classList.add('on');}
+
+function submitTriage(){if(!sel_||ans_)return;ans_=true;
+const c=cur;att++;const df=Math.abs(sel_-c.answer);const ok=df===0;
+if(ok){triageScore+=3;streak++;cst[c.cat].correct++;}else{streak=0;}
+cst[c.cat].total++;
+slog.push({case_num:att,case_id:c.id,patient:`${c.name}, ${c.age}`,category:c.cat,difficulty:c.diff,your_answer:sel_,correct_answer:c.answer,result:ok?'correct':df===1?'partial':'incorrect',points:ok?3:0,room:'pending',mode});
+document.getElementById('ts').textContent=triageScore;
+document.getElementById('ta').textContent=att>0?Math.round((triageScore/3/att)*100)+'%':'—';
+document.getElementById('tst').textContent=streak;
+document.getElementById('td').textContent=att;
+const fb=document.getElementById('fb');fb.style.display='block';
+if(ok){fb.className='fb fbc';fb.innerHTML=`<div class="fbt">✅ Correct — ESI ${c.answer}</div>${c.analysis}`;}
+else if(df===1){fb.className='fb fbp';fb.innerHTML=`<div class="fbt">⚠️ Close — you chose ESI ${sel_}, correct is ESI ${c.answer}</div>${c.analysis}`;}
+else{fb.className='fb fbi';fb.innerHTML=`<div class="fbt">❌ Incorrect — ESI ${c.answer} was correct</div>${c.analysis}`;}
+document.getElementById('bsub').style.display='none';
+if(mode==='spatial'){showAssignPanel(c,sel_);}
+else{document.getElementById('bnxt').style.display='block';}
+save();}
+
+// ===================== ASSIGN PANEL =====================
+function showAssignPanel(c,esi){
+  pendingAssign={...c,esi,label:`${c.name}, ${c.age} · ${c.id} · ESI ${esi}`};
+  const panel=document.getElementById('assign-panel');panel.style.display='block';
+  const grid=document.getElementById('assign-room-grid');grid.innerHTML='';
+  // Regular rooms
+  ROOM_IDS.forEach(id=>{
+    const isEP=id.startsWith('ep');const label=isEP?id.replace('ep-','EP Room '):id.replace('room-','Room ');
+    const state=rooms[id];const occupied=state!==null&&state!=='cleaning';const cleaning=state==='cleaning';
+    const div=document.createElement('div');div.className='room-opt'+(occupied?' occupied':'')+(cleaning?' cleaning':'')+(isEP?' ep':'');
+    div.innerHTML=`<div class="room-opt-name">${label}</div><div class="room-opt-status">${occupied?rooms[id].label:cleaning?'🧹 Cleaning...':'Empty'}</div>`;
+    if(!occupied&&!cleaning){div.onclick=()=>assignToRoom(id);}
+    grid.appendChild(div);});
+  // Hallway options
+  if(!hallwayFull()){const hw=document.createElement('div');hw.className='room-opt hallway-opt';hw.innerHTML=`<div class="room-opt-name">🚶 Hallway</div><div class="room-opt-status">Slot ${hallway.length+1}/2</div>`;hw.onclick=()=>assignToHallway();grid.appendChild(hw);}
+  document.getElementById('assign-status').textContent=`${regularRoomsAvailable().length} regular room${regularRoomsAvailable().length!==1?'s':''} available · ${2-hallway.length} hallway slot${2-hallway.length!==1?'s':''} available`;}
+
+function assignToRoom(roomId){
+  if(!pendingAssign)return;
+  const pt={...pendingAssign,roomId};
+  rooms[roomId]=pt;
+  // Penalty checks
+  const isEP=roomId.startsWith('ep');
+  if(isEP&&pt.esi>2){addPenalty(`${pt.name} (ESI ${pt.esi}) placed in Emergency Procedure Room — EP rooms reserved for ESI-1/2 only.`,-2);}
+  if(isEP&&pt.esi<=2&&regularRoomsAvailable().length===0){// EP used correctly when no rooms available — no penalty
+  }
+  // Update slog
+  if(slog.length>0)slog[slog.length-1].room=roomId;
+  pendingAssign=null;
+  document.getElementById('assign-panel').style.display='none';
+  document.getElementById('bnxt').style.display='block';
+  updateMapRoom(roomId);updateMapStats();
+  // Add to queue display
+  addToQueue(pt);
+  scheduleDischarge(pt);}
+
+function assignToHallway(){
+  if(!pendingAssign||hallwayFull())return;
+  const pt={...pendingAssign,roomId:'hallway'};
+  hallway.push(pt);
+  if(slog.length>0)slog[slog.length-1].room='hallway';
+  pendingAssign=null;
+  document.getElementById('assign-panel').style.display='none';
+  document.getElementById('bnxt').style.display='block';
+  updateHallwaySlots();updateMapStats();}
+
+// ===================== ROOM MAP UPDATE =====================
+function updateMapRoom(roomId){
+  const pt=rooms[roomId];const content=document.getElementById(roomId+'-content');const cell=document.getElementById(roomId);
+  if(!content||!cell)return;
+  if(pt===null){cell.classList.remove('occupied','cleaning-anim');content.className='room-empty-txt';content.textContent='Empty';}
+  else if(pt==='cleaning'){cell.classList.add('cleaning-anim');cell.classList.remove('occupied');content.className='cleaning-txt';content.textContent='🧹 Cleaning...';}
+  else{cell.classList.add('occupied');cell.classList.remove('cleaning-anim');content.innerHTML=`<div class="room-patient"><div class="patient-icon">🛏️</div><div class="patient-info">${pt.name}, ${pt.age}<br>${pt.id}</div><span class="patient-esi esi-badge-${pt.esi}">ESI ${pt.esi}</span></div>`;}}
+
+function updateHallwaySlots(){hallway.forEach((pt,i)=>{const slot=document.getElementById('hall-slot-'+i);if(slot){slot.className='hallway-slot has-patient';slot.innerHTML=`<strong>${pt.name}</strong><br><span style="font-size:9px;">${pt.id} · ESI ${pt.esi}</span>`;}});for(let i=hallway.length;i<2;i++){const slot=document.getElementById('hall-slot-'+i);if(slot){slot.className='hallway-slot';slot.innerHTML=`Slot ${i+1}<br><span style="font-size:9px;">Empty</span>`;}}}
+
+function updateMapStats(){const used=ROOM_IDS.filter(id=>rooms[id]&&rooms[id]!=='cleaning').length;const hUsed=hallway.length;document.getElementById('rooms-used').textContent=used;document.getElementById('hall-used').textContent=hUsed;document.getElementById('sp-hall').textContent=hUsed;document.getElementById('sp-dis').textContent=discharged;document.getElementById('sp-score').textContent=spatialScore;document.getElementById('sp-pen').textContent=penalties.length;}
+
+// ===================== ROOM CLICK POPUP =====================
+function clickRoom(roomId){
+  const pt=rooms[roomId];const popup=document.getElementById('room-popup');const content=document.getElementById('popup-content');
+  const isEP=roomId.startsWith('ep');const label=isEP?roomId.replace('ep-','EP Room '):roomId.replace('room-','Room ');
+  document.getElementById('popup-title').textContent=label;
+  if(!pt||pt==='cleaning'){
+    content.innerHTML=pt==='cleaning'?'<div style="font-size:13px;color:#92400e;padding:8px;background:#fef3c7;border-radius:6px;margin-bottom:10px;">🧹 This room is being cleaned...</div>':'<div style="font-size:13px;color:var(--gy5);margin-bottom:10px;">This room is empty.</div>';
+  } else {
+    content.innerHTML=`<div style="font-size:13px;margin-bottom:12px;background:var(--gy0);padding:10px;border-radius:6px;"><strong>${pt.name}, ${pt.age}</strong><br><span style="color:var(--gy5);">ID: ${pt.id} · Category: ${pt.cat}</span><br><span class="badge ${pt.esi===1?'bh':pt.esi<=3?'bm':'be'}" style="margin-top:4px;display:inline-block;">ESI ${pt.esi}</span></div>
+    <button class="popup-btn popup-move" onclick="startMove('${roomId}')">📦 Move patient (−1 point)</button>
+    <button class="popup-btn popup-discharge" onclick="dischargePatient('${roomId}')">✅ Discharge patient</button>`;}
+  popup.classList.add('on');}
+
+function closePopup(){document.getElementById('room-popup').classList.remove('on');}
+
+function startMove(fromRoom){closePopup();const pt=rooms[fromRoom];if(!pt||pt==='cleaning')return;spatialScore=Math.max(0,spatialScore-1);moves++;
+// Show reassign
+const grid=document.getElementById('assign-room-grid');grid.innerHTML='';pendingAssign={...pt};rooms[fromRoom]=null;updateMapRoom(fromRoom);
+ROOM_IDS.forEach(id=>{if(id===fromRoom)return;const isEP=id.startsWith('ep');const label=isEP?id.replace('ep-','EP Room '):id.replace('room-','Room ');const state=rooms[id];const occupied=state!==null&&state!=='cleaning';const cleaning=state==='cleaning';const div=document.createElement('div');div.className='room-opt'+(occupied?' occupied':'')+(cleaning?' cleaning':'')+(isEP?' ep':'');div.innerHTML=`<div class="room-opt-name">${label}</div><div class="room-opt-status">${occupied?rooms[id].label:cleaning?'🧹 Cleaning...':'Empty'}</div>`;if(!occupied&&!cleaning){div.onclick=()=>assignToRoom(id);}grid.appendChild(div);});
+document.getElementById('assign-panel').style.display='block';document.getElementById('assign-status').textContent=`Moving: ${pt.name}. Select new room. (-1 point applied)`;updateMapStats();}
+
+function dischargePatient(roomId){closePopup();const pt=rooms[roomId];if(!pt||pt==='cleaning')return;
+discharged++;spatialScore+=2;
+rooms[roomId]='cleaning';updateMapRoom(roomId);
+// 5 sec cleaning timer
+cleaningTimers[roomId]=setTimeout(()=>{rooms[roomId]=null;updateMapRoom(roomId);delete cleaningTimers[roomId];updateMapStats();},5000);
+// Remove from hallway display if there
+hallway=hallway.filter(h=>h.id!==pt.id);updateHallwaySlots();updateMapStats();}
+
+// ===================== DISCHARGE SCHEDULE =====================
+function scheduleDischarge(pt){// After ESI-based rounds, prompt discharge option via queue
+const rounds={1:5,2:4,3:3,4:2,5:1};const r=rounds[pt.esi]||3;
+pt.dischargeAfter=att+r;// will check in nextCase}
+
+function checkDischarges(){ROOM_IDS.forEach(id=>{const pt=rooms[id];if(pt&&pt!=='cleaning'&&pt.dischargeAfter&&att>=pt.dischargeAfter){const cell=document.getElementById(id);if(cell&&!cell.dataset.dischargeNotified){cell.dataset.dischargeNotified='1';cell.style.boxShadow='0 0 0 3px #10b981';const content=document.getElementById(id+'-content');if(content&&rooms[id]&&rooms[id]!=='cleaning'){const existing=content.querySelector('.room-patient');if(existing){const notif=document.createElement('div');notif.style.cssText='font-size:9px;color:#10b981;font-weight:700;margin-top:2px;';notif.textContent='✅ Ready to discharge';existing.appendChild(notif);}}}}});}}
+
+// ===================== QUEUE DISPLAY =====================
+function addToQueue(pt){const list=document.getElementById('queue-list');const empty=list.querySelector('span');if(empty)empty.remove();const item=document.createElement('div');item.className='queue-pt';item.id='queue-'+pt.id;item.innerHTML=`🛏️ <strong>${pt.name}</strong>, ${pt.age} · ESI ${pt.esi} · ${pt.id}`;list.appendChild(item);document.getElementById('queue-count').textContent=list.querySelectorAll('.queue-pt').length+' patients';}
+
+// ===================== EMERGENCY SYSTEM =====================
+function scheduleEmergency(){if(mode!=='spatial')return;const delay=15000+Math.random()*25000;// 15-40 seconds
+emergencyTimer=setTimeout(triggerEmergency,delay);}
+
+function triggerEmergency(){if(mode!=='spatial')return;
+const ec=EMERGENCY_CASES[Math.floor(Math.random()*EMERGENCY_CASES.length)];ec.esi=1;
+playSiren();
+document.getElementById('siren-overlay').classList.add('on');document.getElementById('siren-banner').classList.add('on');document.getElementById('siren-banner').textContent=`🚨 EMERGENCY — ${ec.name}, ${ec.age} · ${ec.sym.slice(0,40)}... · ESI 1 🚨`;
+setTimeout(()=>{document.getElementById('siren-overlay').classList.remove('on');document.getElementById('siren-banner').classList.remove('on');},4000);
+// Add to assign queue
+pendingAssign={...ec,label:`${ec.name}, ${ec.age} · ${ec.id} · ESI 1 [EMERGENCY]`,isEmergency:true};
+const panel=document.getElementById('assign-panel');panel.style.display='block';panel.style.borderColor='#ef4444';panel.style.background='#fff1f2';document.getElementById('assign-panel').querySelector('.assign-title').textContent='🚨 EMERGENCY — Assign immediately:';
+const grid=document.getElementById('assign-room-grid');grid.innerHTML='';
+ROOM_IDS.forEach(id=>{const isEP=id.startsWith('ep');const label=isEP?id.replace('ep-','EP Room '):id.replace('room-','Room ');const state=rooms[id];const occupied=state!==null&&state!=='cleaning';const cleaning=state==='cleaning';const div=document.createElement('div');div.className='room-opt'+(occupied?' occupied':'')+(cleaning?' cleaning':'')+(isEP?' ep':'');div.innerHTML=`<div class="room-opt-name">${label}</div><div class="room-opt-status">${occupied?(rooms[id].name||'occupied'):cleaning?'🧹 Cleaning...':'Empty'}</div>`;if(!occupied&&!cleaning){div.onclick=()=>{assignToRoom(id);panel.style.borderColor='';panel.style.background='';panel.querySelector('.assign-title').textContent='📍 Assign patient to a room or hallway:';}}grid.appendChild(div);});
+if(!hallwayFull()){const hw=document.createElement('div');hw.className='room-opt hallway-opt';hw.innerHTML=`<div class="room-opt-name">🚶 Hallway</div><div class="room-opt-status">Slot ${hallway.length+1}/2</div>`;hw.onclick=()=>{assignToHallway();panel.style.borderColor='';panel.style.background='';};grid.appendChild(hw);}
+document.getElementById('assign-status').textContent='⚠️ ESI-1 Emergency — assign immediately. If all rooms full, hallway only if not blocking exits.';
+scheduleEmergency();}
+
+// ===================== PENALTIES =====================
+function addPenalty(msg,pts){penalties.push({msg,pts});spatialScore=Math.max(0,spatialScore+pts);updateMapStats();}
+
+// ===================== NEXT CASE =====================
+function nextCase(){checkDischarges();cur=nextPt();renderCase();}
+
+// ===================== NAV =====================
+function sw(t){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('on'));document.getElementById('s-'+t).classList.add('on');document.querySelector(`[data-t="${t}"]`).classList.add('on');
+if(t==='report')rReport();if(t==='log')rLog();}
+
+// ===================== REPORT =====================
+function rReport(){const all=[...slog];if(!all.length)return;const cor=all.filter(l=>l.result==='correct').length;const triAcc=Math.round((cor/all.length)*100);
+document.getElementById('report-content').innerHTML=`
+  <div class="rst"><span>Total cases</span><span class="rv">${all.length}</span></div>
+  <div class="rst"><span>Triage accuracy</span><span class="rv">${triAcc}%</span></div>
+  <div class="rst"><span>Triage score</span><span class="rv">${triageScore} pts</span></div>
+  ${mode==='spatial'?`<div class="rst"><span>Spatial score</span><span class="rv">${spatialScore} pts</span></div><div class="rst"><span>Patients discharged</span><span class="rv">${discharged}</span></div><div class="rst"><span>Patient moves (−1 each)</span><span class="rv">${moves}</span></div><div class="rst"><span>Penalties</span><span class="rv">${penalties.length}</span></div><div class="rst"><span>Total session score</span><span class="rv">${triageScore+spatialScore} pts</span></div>`:''}`;
+if(mode==='spatial'&&penalties.length>0){document.getElementById('penalty-card').style.display='block';document.getElementById('penalty-list').innerHTML=penalties.map(p=>`<div class="penalty-item"><span style="color:#dc2626;font-weight:700;">${p.pts} pts</span><span>${p.msg}</span></div>`).join('');}else{document.getElementById('penalty-card').style.display='none';}
+const ac={};CATS.forEach(c=>ac[c]={correct:0,total:0});all.forEach(l=>{if(ac[l.category]){ac[l.category].total++;if(l.result==='correct')ac[l.category].correct++;}});
+document.getElementById('cat-bars').innerHTML=CATS.filter(c=>ac[c].total>0).map(c=>{const a=Math.round((ac[c].correct/ac[c].total)*100);const col=a>=80?'#16a34a':a>=50?'#d97706':'#dc2626';return`<div class="catrow"><div class="catname">${c}</div><div class="cattrack"><div class="catfill" style="width:${a}%;background:${col};"></div></div><div class="catpct">${a}%</div></div>`;}).join('')||'<p style="font-size:13px;color:var(--gy5);">No data.</p>';}
+
+// ===================== LOG =====================
+function rLog(){const all=[...slog];document.getElementById('log-empty').style.display=all.length?'none':'block';document.getElementById('log-body').innerHTML=all.map(l=>`<tr class="r${l.result[0]}"><td>${l.case_num}</td><td>${l.patient}</td><td>${l.category}</td><td>ESI ${l.your_answer}</td><td>ESI ${l.correct_answer}</td><td><strong>${l.result}</strong></td><td>${l.points}</td><td>${l.room||'—'}</td><td>${l.mode}</td></tr>`).join('');}
+
+// ===================== EXPORT =====================
+function expCSV(){if(!slog.length)return;const h=['case_num','case_id','patient','category','difficulty','your_answer','correct_answer','result','points','room','mode'];const rows=slog.map(r=>h.map(k=>String(r[k]!==undefined?r[k]:'').replace(/,/g,'')).join(','));const csv=[h.join(','),...rows].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`er_triage_spatial_${(U||'user').replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;a.click();}
+
+// ===================== INIT =====================
+CATS.forEach(c=>{cst[c]={correct:0,total:0};});
+try{initLogin();}catch(e){}
+</script>
+</body>
+</html>
